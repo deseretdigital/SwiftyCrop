@@ -110,7 +110,7 @@ struct CropView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .simultaneousGesture(magnificationGesture)
             .simultaneousGesture(dragGesture)
-            .simultaneousGesture(configuration.rotateImage ? rotationGesture : nil)
+            .simultaneousGesture(configuration.rotation == .gesture ? rotationGesture : nil)
             
             HStack {
                 Button {
@@ -121,6 +121,29 @@ struct CropView: View {
                 .foregroundColor(.white)
                 
                 Spacer()
+
+                if configuration.rotation == .buttons {
+                    HStack(spacing: 16) {
+                        Button {
+                            viewModel.lastAngle = Angle(degrees: viewModel.lastAngle.degrees - 90)
+                        } label: {
+                            Image(systemName: "rotate.left")
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.white)
+                        }
+                        
+                        Button {
+                            viewModel.lastAngle = Angle(degrees: viewModel.lastAngle.degrees + 90)
+                        } label: {
+                            Image(systemName: "rotate.right")
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    Spacer()
+                }
                 
                 Button {
                     onComplete(cropImage())
@@ -146,7 +169,7 @@ struct CropView: View {
     
     private func cropImage() -> UIImage? {
         var editedImage: UIImage = image
-        if configuration.rotateImage {
+        if configuration.rotation != .none {
             if let rotatedImage: UIImage = viewModel.rotate(
                 editedImage,
                 viewModel.lastAngle

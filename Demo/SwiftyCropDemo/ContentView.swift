@@ -7,7 +7,7 @@ struct ContentView: View {
     @State private var selectedShape: MaskShape = .square
     @State private var rectAspectRatio: PresetAspectRatios = .fourToThree
     @State private var cropImageCircular: Bool
-    @State private var rotateImage: Bool
+    @State private var rotation: Rotation
     @State private var maxMagnificationScale: CGFloat
     @State private var maskRadius: CGFloat
     @State private var zoomSensitivity: CGFloat
@@ -31,7 +31,7 @@ struct ContentView: View {
     init() {
         let defaultConfiguration = SwiftyCropConfiguration()
         _cropImageCircular = State(initialValue: defaultConfiguration.cropImageCircular)
-        _rotateImage = State(initialValue: defaultConfiguration.rotateImage)
+        _rotation = State(initialValue: defaultConfiguration.rotation)
         _maxMagnificationScale = State(initialValue: defaultConfiguration.maxMagnificationScale)
         _maskRadius = State(initialValue: defaultConfiguration.maskRadius)
         _zoomSensitivity = State(initialValue: defaultConfiguration.zoomSensitivity)
@@ -92,7 +92,6 @@ struct ContentView: View {
                                 ForEach(PresetAspectRatios.allCases, id: \.self) { aspectRatio in
                                     Text(aspectRatio.rawValue)
                                 }
-                                
                             }
                             .pickerStyle(.segmented)
                         }
@@ -100,7 +99,12 @@ struct ContentView: View {
                     
                     Toggle("Crop image to circle", isOn: $cropImageCircular)
                     
-                    Toggle("Rotate image", isOn: $rotateImage)
+                    Picker("Rotation", selection: $rotation) {
+                        ForEach(Rotation.allCases, id: \.self) { rotation in
+                            Text(String(describing: rotation))
+                        }
+                    }
+                    .pickerStyle(.segmented)
                     
                     HStack {
                         Text("Max magnification")
@@ -159,7 +163,7 @@ struct ContentView: View {
                         maxMagnificationScale: maxMagnificationScale,
                         maskRadius: maskRadius,
                         cropImageCircular: cropImageCircular,
-                        rotateImage: rotateImage,
+                        rotation: rotation,
                         zoomSensitivity: zoomSensitivity,
                         rectAspectRatio: rectAspectRatio.getValue()
                     )
@@ -179,8 +183,8 @@ struct ContentView: View {
     
     // Example function for downloading an image
     private func downloadExampleImage() async -> UIImage? {
-        let portraitUrlString = "https://picsum.photos/1000/1200"
-        let landscapeUrlString = "https://picsum.photos/2000/1000"
+        let portraitUrlString = "https://picsum.photos/1000/1200.jpg"
+        let landscapeUrlString = "https://picsum.photos/2000/1000.jpg"
         let urlString = Int.random(in: 0...1) == 0 ? portraitUrlString : landscapeUrlString
         guard let url = URL(string: urlString),
               let (data, _) = try? await URLSession.shared.data(from: url),
